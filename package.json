@@ -12,7 +12,13 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "@google/genai": "^1.30.0",
-    "lucide-react": "^0.555.0"
+    "lucide-react": "^0.555.0",
+    "/types": "latest",
+    "/constants": "latest",
+    "/App": "latest",
+    "/components/Sidebar": "latest",
+    "/components/ImageGrid": "latest",
+    "/services/geminiService": "latest"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

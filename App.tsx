@@ -3,7 +3,7 @@ import Sidebar from './components/Sidebar';
 import ImageGrid from './components/ImageGrid';
 import { GenerationSettings } from './types';
 import { generateImageBatch } from './services/geminiService';
-import { Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Sparkles, AlertTriangle, Key } from 'lucide-react';
 
 const App: React.FC = () => {
   const [hasApiKey, setHasApiKey] = useState<boolean>(false);
@@ -21,28 +21,19 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkKey = async () => {
-      try {
-        if (window.aistudio) {
-          const hasKey = await window.aistudio.hasSelectedApiKey();
-          setHasApiKey(hasKey);
-        }
-      } catch (e) {
-        console.error("Error checking API key", e);
-      } finally {
-        setIsCheckingKey(false);
+    // Check if API Key is present in the environment variables (injected via Netlify/Shim)
+    const checkKey = () => {
+      const apiKey = process.env.API_KEY;
+      // Check if key exists and is not the placeholder or empty
+      if (apiKey && apiKey !== '__API_KEY__' && apiKey.trim() !== '') {
+        setHasApiKey(true);
+      } else {
+        setHasApiKey(false);
       }
+      setIsCheckingKey(false);
     };
     checkKey();
   }, []);
-
-  const handleConnectKey = async () => {
-    if (window.aistudio) {
-      await window.aistudio.openSelectKey();
-      // Assume success after dialog interaction to avoid race conditions
-      setHasApiKey(true);
-    }
-  };
 
   const handleGenerate = async () => {
     if (!settings.prompt.trim()) return;
@@ -57,11 +48,8 @@ const App: React.FC = () => {
     } catch (err: any) {
       console.error(err);
       
-      // If the error suggests auth issues, we might want to prompt for key again,
-      // but usually the service throws a specific error. 
-      // For now, just show the message.
       if (err.message && (err.message.includes("API key") || err.message.includes("403"))) {
-         setError("Masalah dengan API Key. Silakan refresh atau periksa billing GCP Anda.");
+         setError("Masalah dengan API Key. Silakan periksa konfigurasi environment variable Anda.");
       } else {
          setError(err.message || "Terjadi kesalahan saat membuat gambar.");
       }
@@ -82,31 +70,32 @@ const App: React.FC = () => {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
         <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-2xl mb-6 shadow-lg shadow-indigo-500/20">
-            <Sparkles className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-tr from-amber-500 to-orange-500 rounded-2xl mb-6 shadow-lg shadow-orange-500/20">
+            <Key className="w-8 h-8 text-white" />
           </div>
           
-          <h1 className="text-3xl font-bold text-white mb-3">Imajinasi AI</h1>
-          <p className="text-slate-400 mb-8">
-            Generasikan gambar berkualitas tinggi secara konsisten menggunakan model Gemini terbaru. Hubungkan API Key Anda untuk memulai.
+          <h1 className="text-3xl font-bold text-white mb-3">API Key Diperlukan</h1>
+          <p className="text-slate-400 mb-6">
+            Aplikasi ini memerlukan Google Gemini API Key yang dikonfigurasi melalui Environment Variables.
           </p>
 
-          <button 
-            onClick={handleConnectKey}
-            className="w-full bg-white text-slate-900 font-bold py-3.5 px-6 rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-center gap-2 group"
-          >
-            Hubungkan API Key
-            <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-          </button>
-          
-          <div className="mt-6 flex items-center justify-center gap-2 text-xs text-slate-500">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>API Key diproses dengan aman oleh Google AI Studio</span>
+          <div className="bg-slate-800 rounded-lg p-4 text-left border border-slate-700">
+            <h3 className="text-sm font-semibold text-slate-200 mb-2 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-400" />
+              Instruksi Netlify:
+            </h3>
+            <ol className="list-decimal list-inside text-xs text-slate-400 space-y-2">
+              <li>Buka Dashboard Netlify untuk situs ini.</li>
+              <li>Masuk ke <strong>Site configuration &gt; Environment variables</strong>.</li>
+              <li>Tambahkan variable baru dengan Key: <code className="text-indigo-400">API_KEY</code>.</li>
+              <li>Isi Value dengan Gemini API Key Anda.</li>
+              <li>Simpan dan lakukan <strong>Redeploy</strong> (Trigger deploy).</li>
+            </ol>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-slate-800">
+          <div className="mt-6 pt-4 border-t border-slate-800">
              <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" rel="noreferrer" className="text-xs text-indigo-400 hover:text-indigo-300">
-               Informasi Billing & API Key
+               Dapatkan API Key di Google AI Studio
              </a>
           </div>
         </div>
