@@ -1,0 +1,5 @@
+{
+  "name": "Imajinasi AI - Generator Gambar Konsisten",
+  "description": "Aplikasi pembuat gambar menggunakan Gemini (Nano Banana) yang menghasilkan 4 variasi gambar sekaligus dengan pilihan rasio lengkap untuk media sosial.",
+  "requestFramePermissions": []
+}
